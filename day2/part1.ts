@@ -1,14 +1,13 @@
-import { getData } from './xmas'
+import { getData, timer } from './xmas'
 
 const lines = getData()
 
-part1(lines)
-
-part2(lines)
+timer( "Part 1", ()=>part1(lines))
+timer( "Part 2", ()=>part2(lines))
 
 function part2 (lines: string[]) {
   const data: number[][] = parse(lines)
-  const part2 = data.reduce((score: number, rawRow: number[]) => {
+  return data.reduce((score: number, rawRow: number[]) => {
     const cookedRows=[rawRow]
     for(let i=0;i<rawRow.length;i++) {
       const cookedRow = [...rawRow]
@@ -22,8 +21,6 @@ function part2 (lines: string[]) {
     }
     return score
   }, 0)
-  console.log({part2})
-
 }
 
 function rowPass(row:number[]) {
@@ -48,7 +45,7 @@ function diff (a: number, b: number): number {
 
 function part1 (lines: string[]) {
   const data: number[][] = parse(lines)
-  const part1 = data.reduce((score: number, row: number[]) => {
+  return data.reduce((score: number, row: number[]) => {
     // safe or unsafe
     // work out direction
     const d = dir(row[0], row[1])
@@ -61,7 +58,6 @@ function part1 (lines: string[]) {
     }
     return score+1
   }, 0)
-  console.log({part1})
 }
 
 function parse (lines: string[]): number[][] {
