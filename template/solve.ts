@@ -7,12 +7,16 @@ timer( "Part 2", ()=>part2(lines))
 
 function part1 (lines: string[]) {
   const data: number[][] = parse(lines)
-  return 17
+  
+  let result = 0
+  return result
 }
 
 function part2 (lines: string[]) {
   const data: number[][] = parse(lines)
-  return 23
+
+  let result = 0
+  return result
 }
 
 // default parse assumes a list of ints per row
