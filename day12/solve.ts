@@ -7,8 +7,7 @@ timer('Part 2', () => part2(lines))
 
 type GridPos = { row: number, col: number }
 
-function part1 (lines: string[]) {
-  // find all regions. A region is a list of c,r coordinates
+function findRegions (lines: string[]) {
   const regions: { row: number, col: number }[][] = []
   const map: Record<string, number> = {}
   for (let row = 0; row < lines.length; row++) {
@@ -51,6 +50,12 @@ function part1 (lines: string[]) {
       }
     }
   }
+  return regions
+}
+
+function part1 (lines: string[]) {
+  // find all regions. A region is a list of c,r coordinates
+  const regions = findRegions(lines)
 
   //console.log({ map, regions })
   let result = 0
@@ -69,15 +74,80 @@ function part1 (lines: string[]) {
         }
       })
     })
-    // console.log({edges,l:region.length})
+    //console.log({ edges, l: region.length })
     result += edges * region.length
   })
   return result
 }
 
 function part2 (lines: string[]) {
+  // find all regions. A region is a list of c,r coordinates
+  const regions = findRegions(lines)
 
+  //console.log({ map, regions })
+  // edges are h/v above or to the left of the node they are numbered after
   let result = 0
+  regions.forEach(region => {
+    let edgeMap: Record<string, true> = {}
+    const regionChar = lines[region[0].row][region[0].col]
+    region.forEach(cell => {
+      const neighbours: GridPos[] = []
+      if (cell.col === 0 || cell.col > 0 && lines[cell.row][cell.col - 1] !== regionChar) {
+        // line to the left
+        edgeMap[`${cell.col},${cell.row},L`] = true
+      }
+
+      if (cell.col === lines[0].length - 1 || cell.col < lines[0].length - 1 && lines[cell.row][cell.col + 1] !== regionChar) {
+        // line to the right
+        edgeMap[`${cell.col + 1},${cell.row},R`] = true
+      }
+
+      if (cell.row === 0 || cell.row > 0 && lines[cell.row - 1][cell.col] !== regionChar) {
+        // line to the top
+        edgeMap[`${cell.col},${cell.row},T`] = true
+      }
+
+      if (cell.row === lines.length - 1 || cell.row < lines.length - 1 && lines[cell.row + 1][cell.col] !== regionChar) {
+        // line to the bottom
+        edgeMap[`${cell.col},${cell.row + 1},B`] = true
+      }
+    })
+    // remove connected lines. nb. go one to the right of the grid size for final lines
+    for (let row = 0; row <= lines.length; row++) {
+      for (let col = 0; col <= lines[0].length; col++) {
+        if (edgeMap[`${col},${row},T`]) {
+          let i = 1
+          while (edgeMap[`${col + i},${row},T`]) {
+            delete edgeMap[`${col + i},${row},T`]
+            i++
+          }
+        }
+        if (edgeMap[`${col},${row},L`]) {
+          let i = 1
+          while (edgeMap[`${col},${row + i},L`]) {
+            delete edgeMap[`${col},${row + i},L`]
+            i++
+          }
+        }
+        if (edgeMap[`${col},${row},B`]) {
+          let i = 1
+          while (edgeMap[`${col + i},${row},B`]) {
+            delete edgeMap[`${col + i},${row},B`]
+            i++
+          }
+        }
+        if (edgeMap[`${col},${row},R`]) {
+          let i = 1
+          while (edgeMap[`${col},${row + i},R`]) {
+            delete edgeMap[`${col},${row + i},R`]
+            i++
+          }
+        }
+      }
+
+    }
+    result += Object.keys(edgeMap).length * region.length
+  })
   return result
 }
 

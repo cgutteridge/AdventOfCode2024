@@ -1,0 +1,24 @@
+    '1,1,H': true,
+    '1,1,V': true,
+    '1,2,V': true,
+    '1,3,H': true,
+    '1,3,V': true,
+    '1,4,V': true,
+    '2,1,V': true,
+    '2,2,V': true,
+    '2,3,V': true,
+    '2,4,V': true,
+    '3,1,V': true,
+    '3,2,V': true,
+    '3,3,V': true,
+    '3,4,V': true,
+    '4,1,V': true
+    '4,2,V': true,
+    '4,3,V': true,
+    '4,4,V': true,
+
++|
+||
++
+|
+
