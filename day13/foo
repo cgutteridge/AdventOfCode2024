@@ -1,0 +1,61 @@
+prize.x = a * a.x + b * b.x
+prize.y = a * a.y + b * b.y
+
+
+a = (prize.y - b*b.y) / a.y
+a = (prize.x - b*b.x) / a.x
+
+
+ (prize.y - b*b.y) / a.y = (prize.x - b*b.x) / a.x
+ a.x  * prize.y - a.x* b*b.y = a.y * prize.x - a.y * b*b.x
+
+ a.x * prize.y - a.y * prize x =  a.x*b*b.y - a.y*b*b.x
+ a.x * prize.y - a.y * prize x =  b * ( a.x*b.y - a.y*b.x )
+
+
+ b = (a.x * prize.y - a.y * prize.x) / (a.x*b.y - a.y-b.x):ew
+
+prize.x = a * a.x + b * b.x
+prize.y = a * a.y + b * b.y
+
+px = a * ax + b * bx
+py = a * ay + b * by
+
+
+b = (px - a * ax) / bx
+b = (py - a * ay) / by
+
+(px - a.ax) / bx = (py - a.ay) / by
+by.px - by.a.ax = ax.py - ax.a.ay
+by.px - ax.py = by.a.ax - ax.a.ay
+by.px - ax.py = a.(by.ax - ax.ay)
+a = (by.px - ax.py) / (by.ax - ax.ay)
+:wq
+
+
+px = a * ax + b * bx
+py = a * ay + b * by
+
+px-a*ax= b*bx
+py-a*ay= b*by
+
+(px-a*ax)/bx= b
+(py-a*ay)/by= b
+
+(px-a*ax)/bx=  (py-a*ay)/by
+
+(px-a*ax)*by=  (py-a*ay)*bx
+
+by*px-by*a*ax =  bx*py-bx*a*ay
+bx*a*ay - by*a*ax = bx*py - by*px
+a*(bx*ay - by*ax) = bx*py - by*px
+a= (bx*py - by*px)/(bx*ay - by*ax) 
+:wq
+
+
+py = a * ay + b * by
+
+py - a*ay = b*:wq
+by
+(py - a*ay)/by = b
+

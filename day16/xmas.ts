@@ -25,7 +25,3 @@ export function timer (title: string, task: () => void) {
   const seconds = (end.getTime() - start.getTime()) / 1000
   console.log(`${title}: ${result}    (${seconds}s)`)
 }
-
-export function mod (v: number, n: number) {
-  return ((v % n) + n) % n
-}

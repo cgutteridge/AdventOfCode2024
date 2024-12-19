@@ -26,6 +26,6 @@ export function timer (title: string, task: () => void) {
   console.log(`${title}: ${result}    (${seconds}s)`)
 }
 
-export function mod (v: number, n: number) {
+export function modn (v: bigint, n: bigint) {
   return ((v % n) + n) % n
 }

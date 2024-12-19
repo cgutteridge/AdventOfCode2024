@@ -1,7 +1,5 @@
 import fs from 'fs'
 
-export type XY = { x: number, y: number }
-
 export function getData () {
   let srcFile: string = 'data'
   if (process.argv.length > 2) {
@@ -24,8 +22,4 @@ export function timer (title: string, task: () => void) {
   const end = new Date()
   const seconds = (end.getTime() - start.getTime()) / 1000
   console.log(`${title}: ${result}    (${seconds}s)`)
-}
-
-export function mod (v: number, n: number) {
-  return ((v % n) + n) % n
 }
