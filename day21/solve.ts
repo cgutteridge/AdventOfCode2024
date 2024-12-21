@@ -28,13 +28,26 @@ const arrowPad: ControlPad = {
 const numPadR: InversePad = invertPad(numPad)
 const arrowPadR: InversePad = invertPad(arrowPad)
 
-type RouteMap = Record<string, Record<string, string[]>>
-const routes = makeRoutes({ '<': 0, '>': 2, 'v': 2, '^': 0 }, numPadR, new XY(0, 3))
+type RouteMap = Record<string, Record<string, string>>
 const numRoutes: RouteMap = calcRoutes(numPad, numPadR)
 const arrowRoutes: RouteMap = calcRoutes(arrowPad, arrowPadR)
 
-const arrowFastestRoutes: RouteMap = fastestRoutes(arrowRoutes, arrowPad)
-process.exit(0)
+//console.log(arrowRoutes)
+// what keys need to be push by the controller to push a given key on the controlled, when the controlled finger
+// is on the startKey
+type ButtonCostMap = Record<string, Record<string, number>>
+//console.log(numRoutes)
+//console.log('a', metaKeypad(['<^<']))
+//console.log('b', metaKeypad(['<<^']))
+/*                                                                            +---+---+
+                                                                              | ^ | A |
+                                                                          +---+---+---+
+                                                                          | < | v | > |
+                                                                          +---+---+---+*/
+
+const arrowCostMap: ButtonCostMap = makeCostMap(arrowRoutes)
+//console.log(arrowCostMap)
+
 /** MAIN */
 
 const lines = getData()
@@ -44,22 +57,34 @@ timer('Part 2', () => part2(lines))
 
 /** FUNCTIONS */
 
-function fastestRoutes (routeMap: RouteMap, arrowPad: ControlPad): RouteMap {
-  const fastest: RouteMap = {}
-  for (const [from, toMap] of Object.entries(routeMap)) {
-    fastest[from] = {}
-    for (const [to, routes] of Object.entries(toMap)) {
-      if (from === 'X' || to === 'X') { continue}
-      if (routes.length === 1) {
-        fastest[from][to] = routes
-      } else {
+function getTransitions (route: string) {
+  const r: string[] = []
+  for (let i = 0; i < route.length - 1; i++) {
+    r.push(route.substring(i, i + 2))
+  }
+  return r
+}
 
-        const rmap = routes.map(route => metaKeypad(routes))
-        console.log({ from, to, routes, rmap })
-      }
+function routeToCosts (route: string) {
+  const tCounts: Record<string, number> = {}
+  getTransitions('A' + route).forEach(t => {
+    if (tCounts[t] === undefined) {tCounts[t] = 0}
+    tCounts[t]++
+  })
+  return tCounts
+}
+
+// the move+clicks we need to do to click a button from a given starting point
+function makeCostMap (map: RouteMap): ButtonCostMap {
+  const pmap: ButtonCostMap = {}
+  console.log(map)
+  for (const [from, toMap] of Object.entries(map)) {
+    for (const [target, route] of Object.entries(toMap)) {
+      const costs = routeToCosts(route)
+      pmap[from + target] = costs
     }
   }
-  return fastest
+  return pmap
 }
 
 function invertPad (pad: ControlPad) {
@@ -71,6 +96,7 @@ function invertPad (pad: ControlPad) {
 }
 
 /*
+
 +---+---+---+
 | 7 | 8 | 9 |
 +---+---+---+
@@ -80,126 +106,103 @@ function invertPad (pad: ControlPad) {
 +---+---+---+
     | 0 | A |
     +---+---+
-    +---+---+
-    | ^ | A |
-+---+---+---+
-| < | v | > |
-+---+---+---+
- */
+    */
 
 function calcRoutes (pad: ControlPad, inverted: InversePad): RouteMap {
   const map: RouteMap = {}
   Object.keys(pad).forEach(startKey => {
     map[startKey] = {}
     Object.keys(pad).forEach(endKey => {
-      const routes = findRoutesBetweenKeys(pad, startKey, endKey, inverted)
-      map[startKey][endKey] = routes
+      if (startKey !== 'X' && endKey !== 'X') {
+        const route = findRouteBetweenKeys(pad, startKey, endKey, inverted)
+        map[startKey][endKey] = route + 'A'
+      }
     })
   })
   //console.log(map)
   return map
 }
 
-function findRoutesBetweenKeys (pad: ControlPad, startKey: string, endKey: string, inverted: InversePad) {
+function findRouteBetweenKeys (pad: ControlPad, startKey: string, endKey: string, inverted: InversePad) {
   const startPos: XY = pad[startKey]
   const endPos: XY = pad[endKey]
   const move = endPos.subtract(startPos)
-  const moves: Record<ArrowHeading, number> = { '<': 0, '>': 0, 'v': 0, '^': 0 }
 
-  if (move.x < 0) { moves['<'] = Math.abs(move.x) }
-  if (move.x > 0) { moves['>'] = Math.abs(move.x) }
-  if (move.y < 0) { moves['^'] = Math.abs(move.y) }
-  if (move.y > 0) { moves['v'] = Math.abs(move.y) }
-  const routes = makeRoutes(moves, inverted, startPos)
-  //console.log({ startKey, endKey, startPos, endPos, move, moves, routes })
-  return routes
-}
+  let route = ''
+  if (move.x < 0) { route += '<'.repeat(Math.abs(move.x)) }
+  if (move.y > 0) { route += 'v'.repeat(Math.abs(move.y)) }
+  if (move.y < 0) { route += '^'.repeat(Math.abs(move.y)) }
+  if (move.x > 0) { route += '>'.repeat(Math.abs(move.x)) }
 
-function makeRoutes (moves: Record<ArrowHeading, number>, lookup: InversePad, pos: XY) {
-  //console.log({moves,pos,lookup})
-  const routes: string[] = []
-  let noMoreMoves = true
-  for (const [move, count] of Object.entries(moves)) {
-    if (count > 0) {
-      noMoreMoves = false
-      const newPos = pos.add(ARROW_MOVES[move as ArrowHeading].move)
-      //console.log(lookup[codePos(pos)])
-      if (lookup[codePos(pos)] !== 'X') {
-        const newMoves = { ...moves }
-        newMoves[move as ArrowHeading]--
-        const subRoutes = makeRoutes(newMoves, lookup, newPos)
-        subRoutes.forEach(subRoute => {
-          routes.push(move + subRoute)
-        })
-      }
-    }
+  if (!legalMove(pad, inverted, startPos, route)) {
+    route = route.split('').reverse().join('')
   }
-  if (noMoreMoves) {return ['']}
-  //console.log({moves,pos,routes})
-
-  return routes
+  return route
 }
 
-function findRoutes (padRoutes: RouteMap, task: string): string[] {
-  let routes: string[] = ['']
+function legalMove (pad: ControlPad, inverted: InversePad, startPos: XY, route: string): boolean {
+  let pos = startPos
+  let ok = true
+  route.split('').forEach((dir: string) => {
+    const step = ARROW_MOVES[dir as ArrowHeading].move as XY
+    pos = pos.add(step)
+    const char = inverted[codePos(pos)]
+    if (char === 'X') {
+      ok = false
+    }
+  })
+  return ok
+}
+
+function findButtonsToPush (padRoutes: RouteMap, task: string): string {
+  let route: string = ''
   let fingerPos = 'A'
   for (let i = 0; i < task.length; i++) {
     const targetPos = task[i]
-    const taskRoutes = padRoutes[fingerPos][targetPos]
-    //console.log({ fingerPos, targetPos, taskRoutes })
-    const newRoutes: string[] = []
-    routes.forEach(prefixRoute => {
-      taskRoutes.forEach(taskRoute => {
-        newRoutes.push(prefixRoute + taskRoute + 'A')
-      })
-    })
-    routes = newRoutes
+    const taskRoute = padRoutes[fingerPos][targetPos]
+    route += taskRoute
     fingerPos = targetPos
   }
-  return routes
+  return route
 }
 
-function onlyShortest (list: string[]): string[] {
-  let shortest: number | undefined
-  list.forEach(item => {
-    if (shortest === undefined || shortest > item.length) { shortest = item.length}
-  })
-  return list.filter(item => item.length === shortest)
-}
-
-function metaKeypad (routes: string[]) {
-  const r2all: Record<string, true> = {}
-  routes.forEach(r => {
-    const r2 = findRoutes(arrowRoutes, r)
-    r2.forEach(r2i => {
-      r2all[r2i] = true
-    })
-  })
-  const routes2 = onlyShortest(Object.keys(r2all))
-  return routes2
-}
-
-function part1 (lines: string[]) {
-  let result = 0
-  const ROBOT_COUNT = 2
+function runRobots (lines: string[], ROBOT_COUNT: number) {
+  let result=0
   lines.forEach(line => {
 
     console.log('\n', { line })
-    let routes = onlyShortest(findRoutes(numRoutes, line))
-
-    //console.log({routes})
+    const buttons = findButtonsToPush(numRoutes, line) as string
+    console.log(buttons)
+    let costs = routeToCosts(buttons)
     for (let i = 0; i < ROBOT_COUNT; i++) {
-      routes = metaKeypad(routes)
+      //console.log({i,costs})
+      let costsOfController: Record<string, number> = {}
+      for (const [action, actionCost] of Object.entries(costs)) {
+        const actionsToDoAction = arrowCostMap[action]
+        for (const [actionByController, parentActionCost] of Object.entries(actionsToDoAction)) {
+          if (costsOfController[actionByController] === undefined) {
+            costsOfController[actionByController] = 0
+          }
+          costsOfController[actionByController] += actionCost * parentActionCost
+        }
+      }
+      costs = costsOfController
     }
-
+    const size = Object.values(costs).reduce((acc, v) => acc + v, 0)
     const num = parseInt(line)
-    console.log(routes[0].length, num)
-    result += num * routes[0].length
+    console.log(size, num)
+    result += num * size
   })
   return result
 }
 
+// 247296275931658 too high
+// 228394212164582 too high
+// 154517692795352 FML
+function part1 (lines: string[]) {
+  return runRobots(lines, 2)
+}
+
 function part2 (lines: string[]) {
-  let result = 0
-  return result
+  return runRobots(lines, 25)
 }
