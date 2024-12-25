@@ -48,7 +48,7 @@ function startsWith (str: string, start: string): boolean {
 
 function uniqueSets (sets: string[][]): string[][] {
   const o: Record<string, string[]> = {}
-  sets.forEach(set => o[set.sort().join(',')] = set)
+  sets.forEach(set => o[set.sort().join(',')] = set.sort())
   return Object.values(o)
 }
 
@@ -75,33 +75,37 @@ function part2 (lines: string[]) {
       sets.push([to, from].sort())
     })
   })
-  sets = uniqueSets(sets)
+
+  console.log(sets)
   let merged = true
   let notMerged: string[][] = []
   while (merged) {
     const newSets : string[][] = []
-    //try and merge every set into every other. Any that merge into none goes into the notMerged list
+    merged = false
     sets.forEach(set1 => {
-      let joined=false
-      sets.forEach(set2 => {
-        if (setSame(set1, set2)) { return }
-        // see if we can join any of these sets
-        // does every item in set1 link to every item in set2?
-        const canMerge = canMergeSets( set1,set2,links)
-        //console.log( {canMerge,set1,set2})
-        newSets.push( merge(set1,set2))
-        merged=true
-        joined = true
+      // try to add each non set node
+      nodes.forEach( candidateNode=>{
+        // not nodes already in the set
+        if( set1.includes( candidateNode) ) { return }
+        let allMatch = true
+        set1.forEach( member => {
+          if( links[member][candidateNode]===undefined) {
+            // not an option
+            allMatch = false
+          }
+        } )
+        if(allMatch) {
+          // we're on to the next round!
+          newSets.push( [...set1, candidateNode] )
+          merged = true
+        }
       })
-      if( !joined ) {
-        notMerged.push(set1)
-      }
     })
+    if( newSets.length===0 ) { console.log( sets[0], sets[0].join(',') ) }
     sets=uniqueSets(newSets)
     console.log( sets.length)
   }
 
-  console.log(sets)
   let result = 0
   return result
 }
